@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;touch-action:none;}
+  #screen{width:100%;height:100%;}
+</style>
+</head>
+<body>
+<div id="screen"></div>
+<script>
+const screen = document.getElementById('screen');
+let startX, startY;
+let flashInterval;
+
+function setColor(c){ screen.style.background = c; }
+
+function flashRed(times, done){
+  let count = 0;
+  let on = false;
+  setColor('#000');
+  flashInterval = setInterval(()=>{
+    on = !on;
+    setColor(on ? '#ff0000' : '#000');
+    count++;
+    if(count >= times*2){
+      clearInterval(flashInterval);
+      setColor('#ff0000');
+      if(done) done();
+    }
+  }, 250);
+}
+
+document.addEventListener('touchstart', e=>{
+  const t = e.touches[0];
+  startX = t.clientX;
+  startY = t.clientY;
+}, {passive:true});
+
+document.addEventListener('touchend', e=>{
+  const t = e.changedTouches[0];
+  const dx = t.clientX - startX;
+  const dy = t.clientY - startY;
+  const absX = Math.abs(dx), absY = Math.abs(dy);
+  const threshold = 40;
+
+  clearInterval(flashInterval);
+
+  if(absX < threshold && absY < threshold){
+    // tap -> red flashing then solid red
+    flashRed(4);
+  } else if(absY > absX && dy > threshold){
+    // swipe down -> black
+    setColor('#000');
+  } else if(absX > absY){
+    // swipe sideways -> green
+    setColor('#00ff00');
+  }
+}, {passive:true});
+
+// prevent scrolling/zooming
+document.addEventListener('gesturestart', e=>e.preventDefault());
+</script>
+</body>
+</html>
